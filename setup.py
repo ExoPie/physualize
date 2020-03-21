@@ -4,14 +4,15 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="example-pkg-khurana", # Replace with your own username
+    name="physualize", # Replace with your own username
+    scripts=['bin/physualize'],
     version="0.0.1",
     author="Raman Khurana",
     author_email="ramankhurana1986@gmail.com",
-    description="A small example package",
+    description="a small package to visualise the HEP (and in general) distribution.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/ramankhurana/packaging_tutorial_setup",
+    url="https://github.com/ExoPie/physualize",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 2",
