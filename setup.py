@@ -1,6 +1,6 @@
 import setuptools
 
-with open("README.md", "r") as fh:
+with open("README", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
@@ -9,7 +9,7 @@ setuptools.setup(
     version="0.0.1",
     author="Raman Khurana",
     author_email="ramankhurana1986@gmail.com",
-    description="a small package to visualise the HEP (and in general) distribution.",
+    description="a small package to visualise the distributions which are common in HEP (and in general) distribution.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/ExoPie/physualize",

@@ -1,2 +1,4 @@
 #!/usr/bin/env python
 import physualize
+
+physualize.makeplots()
