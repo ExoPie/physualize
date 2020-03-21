@@ -6,7 +6,7 @@ with open("README", "r") as fh:
 setuptools.setup(
     name="physualize", # Replace with your own username
     scripts=['bin/physualize'],
-    version="0.0.1",
+    version="0.0.2",
     author="Raman Khurana",
     author_email="ramankhurana1986@gmail.com",
     description="a small package to visualise the distributions which are common in HEP (and in general) distribution.",

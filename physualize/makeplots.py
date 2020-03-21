@@ -92,35 +92,36 @@ def GetColumn(readfrom_, filename_, treename_, variable_):
 
 
 
-def makeplots():
-    ''' get the list of files ''' 
-    filelist =  getFileList(args.inputfile)
-    print filelist
+
+''' get the list of files ''' 
+filelist =  getFileList(args.inputfile)
+print filelist
+
+''' get the variable array in a single variable, list ''' 
+AllColumns=[ GetColumn(args.readFrom, ifile, args.treename, args.variable) for ifile in filelist]
+
+print AllColumns
+
+
+from plotutils import plotutils
+pu_ = plotutils(columns=AllColumns, \
+                binning=args.binning, \
+                legend=argsToList(args.legend,";"), \
+                axisTitle=argsToList(args.axistitle,delimator_=";"), \
+                experiment=args.experiment, \
+                plotType=args.plotType, \
+                makeRatio=args.makeratio, \
+                saveLog=args.saveLog, \
+                areaNormalize = args.areaNormalize, \
+                Xrange=argsToList(args.Xrange)
+            )
+
+
+# python makeplots.py  -i files.txt --readFrom TTree --treename monoHbb_SR_boosted --variable MET --binning 20 --legend "signal;top" --axistitle "p_{T}^miss;# of events" --plotMode overlay
+
+
+if args.plotMode:
+    pu_.plotOverlay()
+
     
-    ''' get the variable array in a single variable, list ''' 
-    AllColumns=[ GetColumn(args.readFrom, ifile, args.treename, args.variable) for ifile in filelist]
-    
-    print AllColumns
-    
-    
-    from plotutils import plotutils
-    pu_ = plotutils(columns=AllColumns, \
-                    binning=args.binning, \
-                    legend=argsToList(args.legend,";"), \
-                    axisTitle=argsToList(args.axistitle,delimator_=";"), \
-                    experiment=args.experiment, \
-                    plotType=args.plotType, \
-                    makeRatio=args.makeratio, \
-                    saveLog=args.saveLog, \
-                    areaNormalize = args.areaNormalize, \
-                    Xrange=argsToList(args.Xrange)
-                )
-    
-    
-    # python makeplots.py  -i files.txt --readFrom TTree --treename monoHbb_SR_boosted --variable MET --binning 20 --legend "signal;top" --axistitle "p_{T}^miss;# of events" --plotMode overlay
-    
-    
-    if args.plotMode:
-        pu_.plotOverlay()
-    
-    
+
