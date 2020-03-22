@@ -1,15 +1,16 @@
+#!/usr/bin/python
 import os 
 import sys 
 import argparse
 
-usage = " generalised plotting macro:" # python makeplots.py  -i files.txt --readFrom TTree --treename monoHbb_SR_boosted --variable MET --binning 20  --Xrange "200 1000" --legend "signal;top" --axistitle "USDp_{T}^{miss}USD;# of events" --plotMode overlay --areaNormalize
+usage = " generalised plotting macro:"# python makeplots.py  -i files.txt --readFrom TTree --treename monoHbb_SR_boosted --variable "MET:nJets" --binning "20:4"  --Xrange "200 1000:0 4" --legend "signal;top" --axistitle "USDp_{T}^{miss}USD;# of events:USDn_{Jets}USD;# of events" --plotMode overlay --areaNormalize
 
 parser = argparse.ArgumentParser(description=usage)
 #parser.add_argument("-n","--numberoffiles", dest="inputfile", type=int) ## to double check how many files are there, and also to decide weather to read histo from same file or different files
 parser.add_argument("-i", "--inputfile",  dest="inputfile",default="") ## provide list in "1.root 2.root" else provide the .txt file with all the files
 
 parser.add_argument("-readFrom","--readFrom", dest="readFrom", default="TTree") ## possible values for the moment TTree, later it can also deal with TH1F and CSV and other pythonic data-types. you name it and I will add it. 
-
+parser.add_argument("-prefix_", "--prefix_", dest="prefix_", default="h_")
 parser.add_argument("-treename", "--treename", dest="treename", default="tree_")
 
 parser.add_argument("-merge","--mergefiles",dest="mergefiles",default="") ## if some files need to be merged you can provide same id for those files, should provide like, 1 2 3 4 4 5, it will merge two files with process id 4 
@@ -36,6 +37,7 @@ parser.add_argument("-makeratio", "--makeratio", action="store_true", dest="make
 
 parser.add_argument("-areaNormalize", "--areaNormalize", action="store_true", dest="areaNormalize")
 
+parser.add_argument("-specialstyle","--specialstyle", dest="specialstyle", default="cms.sty") ## it is possible to skip the style parameters from command line and instead provide this style file to set the plotting style. 
 
 parser.add_argument("-saveLog", "--saveLog",  dest="saveLog", default="Y" ) ## possible values it can accept, X, Y, XY, Z, XYZ, XZ, YZ
 
@@ -49,6 +51,7 @@ args = parser.parse_args()
 
 
 from root_pandas import read_root
+from pandas import  read_csv
 import numpy
 
 
@@ -77,11 +80,20 @@ def treeToArray(filename_, treename_, variable_):
     return numpy.array(df)
 
 
+def csvToArray(filename_, variable_):
+    ## this can be changed to uproot in future
+    df = read_csv(filename_,delimiter=",")
+    df = df[[variable_]]
+    return numpy.array(df)
+
+
 def GetColumn(readfrom_, filename_, treename_, variable_):
     ''' check the input type: TTree, TH1F or CSV ''' 
     column_=[]
     if readfrom_ == "TTree":
         column_ =  treeToArray(filename_, treename_, variable_)
+    if readfrom_ == 'csv':
+        column_ = csvToArray(filename_, variable_)
     return column_
 
 ## ** -------------------------------** ##
@@ -98,30 +110,40 @@ filelist =  getFileList(args.inputfile)
 print filelist
 
 ''' get the variable array in a single variable, list ''' 
-AllColumns=[ GetColumn(args.readFrom, ifile, args.treename, args.variable) for ifile in filelist]
-
-print AllColumns
-
-
-from plotutils import plotutils
-pu_ = plotutils(columns=AllColumns, \
-                binning=args.binning, \
-                legend=argsToList(args.legend,";"), \
-                axisTitle=argsToList(args.axistitle,delimator_=";"), \
-                experiment=args.experiment, \
-                plotType=args.plotType, \
-                makeRatio=args.makeratio, \
-                saveLog=args.saveLog, \
-                areaNormalize = args.areaNormalize, \
-                Xrange=argsToList(args.Xrange)
-            )
+allvars  = argsToList(args.variable,delimator_=":")
+allaxistitle = argsToList(args.axistitle,delimator_=":")
+allbinning  = argsToList(args.binning, delimator_=":")
+allXrange   = argsToList(args.Xrange, delimator_=":")
 
 
-# python makeplots.py  -i files.txt --readFrom TTree --treename monoHbb_SR_boosted --variable MET --binning 20 --legend "signal;top" --axistitle "p_{T}^miss;# of events" --plotMode overlay
-
-
-if args.plotMode:
-    pu_.plotOverlay()
-
+for i in range (len(allvars)):
+    AllColumns=[ GetColumn(args.readFrom, ifile, args.treename, allvars[i]) for ifile in filelist]
     
+    prefix_ = ""
+    if args.readFrom == "TTree": prefix_ =  args.treename
+    if args.readFrom == "csv":   prefix_ =  args.prefix_
+    PDFname = prefix_ + "_" + allvars[i]
+    
+    print AllColumns
+    
+    
+    from plotutils import plotutils
+    pu_ = plotutils(columns=AllColumns, \
+                    binning=allbinning[i], \
+                    legend=argsToList(args.legend,";"), \
+                    axisTitle=argsToList(allaxistitle[i],delimator_=";"), \
+                    experiment=args.experiment, \
+                    plotType=args.plotType, \
+                    makeRatio=args.makeratio, \
+                    saveLog=args.saveLog, \
+                    areaNormalize = args.areaNormalize, \
+                    Xrange=argsToList(allXrange[i]),\
+                    pdfname=PDFname
+                )
+    
+    
+    if args.plotMode=="overlay":
+        pu_.plotOverlay()
+    
+        
 

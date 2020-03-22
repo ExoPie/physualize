@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 ## https://matplotlib.org/tutorials/introductory/usage.html#sphx-glr-tutorials-introductory-usage-py
 ## https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.hist.html#matplotlib.axes.Axes.hist
 class plotutils:
-    def __init__(self, columns, binning, legend, axisTitle, experiment, plotType, makeRatio, saveLog, Xrange, areaNormalize=False  ):
+    def __init__(self, columns, binning, legend, axisTitle, experiment, plotType, makeRatio, saveLog, Xrange, pdfname="",areaNormalize=False  ):
         self.columns_    = columns
         self.binning_    = binning
         self.legend_     = legend
@@ -18,6 +18,7 @@ class plotutils:
         self.makeRatio_  = makeRatio
         self.saveLog_    = saveLog
         self.Xrange_     = [float(Xrange[0]), float(Xrange[1])]
+        self.pdfname_    = pdfname
         self.areaNormalize_   = areaNormalize
         #self.   = 
         #self.   = 
@@ -64,7 +65,7 @@ class plotutils:
             ax.set_xlabel(self.axisTitle_[0], x=0.88)
             ax.set_ylabel(self.axisTitle_[1])
         
-        plt.savefig("test.pdf")
+        plt.savefig(self.pdfname_+".pdf")
         return 0
     def plotStack(self):
         return 0
