@@ -24,7 +24,7 @@ class plotutils:
         #self.   = 
         
         #print "inide init of class 
-        print self.columns_, self.binning_, self.legend_, self.axisTitle_, self.experiment_, self.plotType_, self.makeRatio_, self.saveLog_
+        #print self.columns_, self.binning_, self.legend_, self.axisTitle_, self.experiment_, self.plotType_, self.makeRatio_, self.saveLog_
 
     def setrootfiles(self):
         return 0
@@ -47,7 +47,6 @@ class plotutils:
         ## following line takes care of the overflow and underflow bins
         self.columns_ = [np.clip(icol, float(self.Xrange_[0]), float(self.Xrange_[1]) )  for icol in self.columns_]
         
-        print 'weight_column_--', weight_column_
         ax.hist( self.columns_, \
                  bins=int(self.binning_),\
                  histtype='step', \

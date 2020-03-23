@@ -3,8 +3,16 @@ import os
 import sys 
 import argparse
 
-usage = " generalised plotting macro:"# python makeplots.py  -i files.txt --readFrom TTree --treename monoHbb_SR_boosted --variable "MET:nJets" --binning "20:4"  --Xrange "200 1000:0 4" --legend "signal;top" --axistitle "USDp_{T}^{miss}USD;# of events:USDn_{Jets}USD;# of events" --plotMode overlay --areaNormalize
+usage = " generalised plotting macro:"
+#for TTree:  python makeplots.py  -i files.txt --readFrom TTree --treename monoHbb_SR_boosted --variable "MET:nJets" --binning "20:4"  --Xrange "200 1000:0 4" --legend "signal;top" --axistitle "USDp_{T}^{miss}USD;# of events:USDn_{Jets}USD;# of events" --plotMode overlay --areaNormalize
 
+# for csv: python makeplots.py  -i files.txt --readFrom "csv"  --variable "MET:nJets" --binning "20:4"  --Xrange "200 1000:0 4" --legend "signal;top" --axistitle "USDp_{T}^{miss}USD;# of events:USDn_{Jets}USD;# of events" --plotMode overlay --areaNormalize --prefix "monoHbb_SR_boosted_"
+
+# for cuts: python makeplots.py  -i files.txt --readFrom "csv"  --variable "MET:nJets" --binning "20:4"  --Xrange "200 1000:0 4" --legend "signal;top" --axistitle "USDp_{T}^{miss}USD;# of events:USDn_{Jets}USD;# of events" --plotMode overlay --areaNormalize --prefix "monoHbb_SR_boosted_"  --selection "MET>400"
+
+# for multiple cuts python makeplots.py  -i files.txt --readFrom "csv"  --variable "MET:nJets" --binning "20:4"  --Xrange "200 1000:0 4" --legend "signal;top" --axistitle "USDp_{T}^{miss}USD;# of events:USDn_{Jets}USD;# of events" --plotMode overlay --areaNormalize --prefix "monoHbb_SR_boosted_"  --selection "MET>200;nJets==1"
+
+# for 
 parser = argparse.ArgumentParser(description=usage)
 #parser.add_argument("-n","--numberoffiles", dest="inputfile", type=int) ## to double check how many files are there, and also to decide weather to read histo from same file or different files
 parser.add_argument("-i", "--inputfile",  dest="inputfile",default="") ## provide list in "1.root 2.root" else provide the .txt file with all the files
@@ -44,6 +52,8 @@ parser.add_argument("-saveLog", "--saveLog",  dest="saveLog", default="Y" ) ## p
 
 parser.add_argument("-saveType", "--saveType", dest="saveType", default=".pdf") ## you can save in more than one type, just provide them in double quotes seprated by single space 
 
+parser.add_argument("-selection", "--selection", dest="selection", default="")
+
 #parser.add_argument("", "--", dest="", default="")
 
 
@@ -72,28 +82,86 @@ def getFileList(args_input_):
         fileList_ = argsToList(args_input_)
     return fileList_
 
+def SelectedDataFrame(df, selection_):
+    '''
+    sign_ = selection_[1]
+    if sign_ == ">": df = df[(df[selection_[0]]>float(selection_[2]))]
+    if sign_ == "<": df = df[(df[selection_[0]]<float(selection_[2]))]
+    if sign_ == "==": df = df[(df[selection_[0]]==float(selection_[2]))]
+    if sign_ == ">=": df = df[(df[selection_[0]]>=float(selection_[2]))]
+    if sign_ == "<=": df = df[(df[selection_[0]]<=float(selection_[2]))]
+    '''
+    #var_ = selection_[0]
+    
 
-def treeToArray(filename_, treename_, variable_):
+    cutval = float(selection_[2])
+    qry = str(selection_[0])+" > @cutval"
+    df = df.query(qry)
+    '''
+    sel_qry = ""
+    for isel in selection_:
+        cutval = float(isel[2])
+        qry = str(isel[0])+" > @cutval & "
+    df = df.query(qry)
+    '''
+    return df
+
+def treeToArray(filename_, treename_, variable_, selection_=""):
     ## this can be changed to uproot in future
     df = read_root(filename_, treename_, columns=[variable_])
+    if selection_ != "": 
+        for isel in selection_:
+            df  = SelectedDataFrame(df, selection_)
     df = df[[variable_]]
     return numpy.array(df)
 
 
-def csvToArray(filename_, variable_):
+
+
+    
+def csvToArray(filename_, variable_, selection_=""):
+    print "selection = ",selection_
     ## this can be changed to uproot in future
     df = read_csv(filename_,delimiter=",")
+    print "df lenght before cut", len(df)
+    if selection_ != "": 
+        for isel in selection_:
+            df  = SelectedDataFrame(df, isel)
+            print "----------------"
+            print "size of df after ", isel, len(df)
+        #df  = SelectedDataFrame(df, selection_)
     df = df[[variable_]]
     return numpy.array(df)
 
 
+def GetSelection(selec):
+    selForQuery=[]
+    for iselection in selec:
+        sign_=""
+        if ">"  in iselection: sign_  = ">" 
+        if "<"  in iselection: sign_  = "<" 
+        if "==" in iselection: sign_  = "==" 
+        if ">=" in iselection: sign_  = ">=" 
+        if "<=" in iselection: sign_  = "<="
+        if "!=" in iselection: sign_  = "!="
+
+        selvar_ = iselection.split(sign_)[0]
+        selcut_ = iselection.split(sign_)[1]
+        selForQuery.append( [iselection.split(sign_)[0], sign_, iselection.split(sign_)[1]])
+
+    return selForQuery
+    
 def GetColumn(readfrom_, filename_, treename_, variable_):
     ''' check the input type: TTree, TH1F or CSV ''' 
     column_=[]
+    allselection = argsToList(args.selection, delimator_=";")
     if readfrom_ == "TTree":
-        column_ =  treeToArray(filename_, treename_, variable_)
+        
+        column_ =  treeToArray(filename_, treename_, variable_, GetSelection(allselection))
     if readfrom_ == 'csv':
-        column_ = csvToArray(filename_, variable_)
+        #selection_ = GetSelection(args.selection)
+        column_ = csvToArray(filename_, variable_, GetSelection(allselection))
+
     return column_
 
 ## ** -------------------------------** ##
@@ -124,7 +192,7 @@ for i in range (len(allvars)):
     if args.readFrom == "csv":   prefix_ =  args.prefix_
     PDFname = prefix_ + "_" + allvars[i]
     
-    print AllColumns
+    
     
     
     from plotutils import plotutils
