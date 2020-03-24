@@ -197,7 +197,7 @@ for i in range (len(allvars)):
     
     from plotutils import plotutils
     pu_ = plotutils(columns=AllColumns, \
-                    binning=allbinning[i], \
+                    binning=argsToList(allbinning[i]), \
                     legend=argsToList(args.legend,";"), \
                     axisTitle=argsToList(allaxistitle[i],delimator_=";"), \
                     experiment=args.experiment, \
