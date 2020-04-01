@@ -93,7 +93,7 @@ def SelectedDataFrame(df, selection_):
     '''
     #var_ = selection_[0]
     
-
+    print selection_
     cutval = float(selection_[2])
     qry = str(selection_[0])+" > @cutval"
     df = df.query(qry)
@@ -111,7 +111,7 @@ def treeToArray(filename_, treename_, variable_, selection_=""):
     df = read_root(filename_, treename_, columns=[variable_])
     if selection_ != "": 
         for isel in selection_:
-            df  = SelectedDataFrame(df, selection_)
+            df  = SelectedDataFrame(df, isel)
     df = df[[variable_]]
     return numpy.array(df)
 
